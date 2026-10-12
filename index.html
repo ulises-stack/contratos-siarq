@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contratos SIARQ</title>
+<style>
+:root{
+  --bg:#f4f4f2; --card:#ffffff; --ink:#151515; --muted:#6b6b6b; --line:#dcdcd8;
+  --accent:#151515; --accent-ink:#ffffff; --soft:#efefec;
+  --ok:#1f7a3d; --ok-bg:#e6f3ea; --warn:#9a5b00; --warn-bg:#fff3dc; --err:#b42318; --err-bg:#fde8e6;
+  --auto:#2f5fb3;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121212; --card:#1c1c1c; --ink:#f0f0ee; --muted:#a0a09c; --line:#333331;
+    --accent:#f0f0ee; --accent-ink:#121212; --soft:#262626;
+    --ok:#6fcf8f; --ok-bg:#16301f; --warn:#f0b65a; --warn-bg:#33270f; --err:#ff8a7e; --err-bg:#3a1714;
+    --auto:#8fb0f0;
+  }
+  :root:not([data-theme="light"]) .logo{filter:invert(1)}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+.head{display:flex;align-items:center;gap:18px;padding:14px 0}
+.logo{height:42px;width:auto}
+.head h1{font-size:18px;margin:0;font-weight:650;letter-spacing:.2px}
+.head p{margin:2px 0 0;color:var(--muted);font-size:13px}
+nav{display:flex;gap:4px;overflow-x:auto}
+nav button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+nav button.on{color:var(--ink);border-bottom-color:var(--accent)}
+nav .badge{display:inline-block;min-width:20px;padding:0 6px;border-radius:10px;background:var(--soft);font-size:12px;margin-left:4px}
+main{padding:20px 0 60px}
+.tab{display:none}.tab.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+.card h2{font-size:15px;margin:0 0 14px;font-weight:650;display:flex;align-items:center;gap:8px}
+.card h2 .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px 14px}
+.c12{grid-column:span 12}.c8{grid-column:span 8}.c6{grid-column:span 6}.c4{grid-column:span 4}.c3{grid-column:span 3}
+@media (max-width:760px){.c8,.c6,.c4,.c3{grid-column:span 12}}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:4px}
+label .tag{font-weight:500;color:var(--auto);margin-left:4px}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+textarea{min-height:90px;resize:vertical;font-size:13.5px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+input.bad{border-color:var(--err);background:var(--err-bg)}
+input.good{border-color:var(--ok)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px;min-height:16px}
+.hint.err{color:var(--err)}.hint.ok{color:var(--ok)}
+.letra{padding:9px 10px;border-radius:8px;background:var(--soft);font-size:13px;font-weight:600;min-height:38px}
+.layout{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+@media (max-width:980px){.layout{grid-template-columns:1fr}}
+.side{position:sticky;top:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:600;cursor:pointer}
+.btn.sec{background:var(--card);color:var(--ink);border-color:var(--line)}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btns{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.summary dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin:0;font-size:13px}
+.summary dt{color:var(--muted)}.summary dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.checks{list-style:none;margin:12px 0 0;padding:0;font-size:13px}
+.checks li{padding:3px 0}.checks li::before{content:"•";margin-right:6px}
+.checks .ok{color:var(--ok)}.checks .err{color:var(--err)}.checks .warn{color:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600;background:var(--soft)}
+.tablewrap{overflow-x:auto}
+.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.warn{background:var(--warn-bg);color:var(--warn)}.pill.err{background:var(--err-bg);color:var(--err)}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:26px;text-align:center;color:var(--muted);cursor:pointer}
+.drop.over{border-color:var(--accent);background:var(--soft)}
+.empty{color:var(--muted);text-align:center;padding:24px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--accent);color:var(--accent-ink);padding:10px 18px;border-radius:8px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:10}
+.toast.on{opacity:1}
+.puesto-item{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
+.small{font-size:12.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="head">
+      <img class="logo" alt="SIARQ" src="logo.png">
+      <div>
+        <h1>Generador de Contratos Individuales de Trabajo</h1>
+        <p>Llena los datos y descarga el Word con la plantilla oficial. Los datos de los trabajadores no se envían a ningún servidor. <span id="verInfo"></span></p>
+      </div>
+    </div>
+    <nav>
+      <button data-tab="uno" class="on">Contrato individual</button>
+      <button data-tab="lote">Lote / Excel <span class="badge" id="loteCount">0</span></button>
+      <button data-tab="fijos">Datos fijos y puestos</button>
+      <button data-tab="ayuda">Ayuda</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+<!-- ============ UNO ============ -->
+<section class="tab on" id="tab-uno">
+  <div class="layout">
+    <div>
+      <div class="card">
+        <h2><span class="n">1</span>Trabajador</h2>
+        <div class="grid">
+          <div class="c8"><label for="nombre">Nombre completo</label><input id="nombre" placeholder="NOMBRE APELLIDO PATERNO APELLIDO MATERNO" autocomplete="off"></div>
+          <div class="c4"><label for="nacionalidad">Nacionalidad</label><input id="nacionalidad"></div>
+          <div class="c6"><label for="curp">CURP</label><input id="curp" maxlength="18" autocomplete="off"><div class="hint" id="h-curp"></div></div>
+          <div class="c3"><label for="rfc">RFC <span class="tag">auto desde CURP</span></label><input id="rfc" maxlength="13" autocomplete="off"><div class="hint" id="h-rfc"></div></div>
+          <div class="c3"><label for="edad">Edad <span class="tag">auto</span></label><input id="edad" type="number" min="15" max="99"><div class="hint" id="h-edad"></div></div>
+          <div class="c4"><label for="nss">NSS (IMSS)</label><input id="nss" maxlength="11" inputmode="numeric" autocomplete="off"><div class="hint" id="h-nss"></div></div>
+          <div class="c8"><label for="domicilio">Domicilio</label><input id="domicilio" placeholder="Calle y número, colonia, C.P., municipio, estado"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="n">2</span>Puesto</h2>
+        <div class="grid">
+          <div class="c6"><label for="puesto">Puesto</label><select id="puesto"></select></div>
+          <div class="c6"><label for="lugar_trabajo">Lugar de trabajo (obra)</label><input id="lugar_trabajo"></div>
+          <div class="c12"><label for="descripcion">Descripción de funciones (cláusula PRIMERA) <span class="tag">viene del catálogo, puedes ajustarla</span></label><textarea id="descripcion"></textarea></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="n">3</span>Fechas y salario</h2>
+        <div class="grid">
+          <div class="c4"><label for="fecha_inicio">Inicio (periodo de prueba)</label><input id="fecha_inicio" type="date"></div>
+          <div class="c4"><label for="fecha_fin">Término <span class="tag">auto +5 días</span></label><input id="fecha_fin" type="date"></div>
+          <div class="c4"><label for="fecha_firma">Fecha de firma <span class="tag">auto = inicio</span></label><input id="fecha_firma" type="date"></div>
+          <div class="c4"><label for="tipo_contrato">Tiempo</label><select id="tipo_contrato"><option>DETERMINADO</option><option>INDETERMINADO</option></select></div>
+          <div class="c4"><label for="salario">Salario diario bruto ($)</label><input id="salario" type="number" step="0.01" min="0" placeholder="330.58"></div>
+          <div class="c4"><label>Importe con letra <span class="tag">auto</span></label><div class="letra" id="salario_letra">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="side">
+      <div class="card summary">
+        <h2>Resumen</h2>
+        <dl id="resumen"></dl>
+        <ul class="checks" id="checks"></ul>
+      </div>
+      <div class="card">
+        <div class="btns">
+          <button class="btn" id="btnDescargar">Descargar contrato en Word</button>
+          <button class="btn sec" id="btnAgregar">Agregar al lote</button>
+          <button class="btn sec" id="btnLimpiar">Nuevo trabajador (limpiar)</button>
+        </div>
+        <p class="small" style="margin:10px 0 0">Tip: al limpiar se conservan puesto, obra, fechas y salario para capturar rápido a toda la cuadrilla.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ LOTE ============ -->
+<section class="tab" id="tab-lote">
+  <div class="card">
+    <h2><span class="n">1</span>Captura en Excel</h2>
+    <p class="small" style="margin-top:0">Descarga el formato, llena un renglón por trabajador y súbelo aquí. Las columnas vacías toman los valores de <b>Datos fijos</b>. El RFC y la edad se calculan desde la CURP si los dejas vacíos.</p>
+    <div class="row">
+      <button class="btn sec" id="btnFormato">Descargar formato Excel</button>
+    </div>
+    <div class="drop" id="drop" style="margin-top:14px">
+      <b>Arrastra aquí tu Excel</b> o haz clic para elegirlo
+      <input type="file" id="fileXlsx" accept=".xlsx,.xls,.csv" hidden>
+    </div>
+  </div>
+  <div class="card">
+    <h2><span class="n">2</span>Contratos en el lote</h2>
+    <div class="row" style="margin-bottom:12px">
+      <button class="btn" id="btnZip">Generar todos (ZIP)</button>
+      <button class="btn sec" id="btnVaciar">Vaciar lote</button>
+      <span class="small" id="loteInfo"></span>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>Nombre</th><th>Puesto</th><th>CURP / NSS</th><th>Inicio</th><th>Salario</th><th>Revisión</th><th></th></tr></thead>
+        <tbody id="loteBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FIJOS ============ -->
+<section class="tab" id="tab-fijos">
+  <div class="card">
+    <h2>Datos que casi no cambian</h2>
+    <p class="small" style="margin-top:0">Al guardar, los cambios solo aplican <b>en esta computadora</b>. Para que todo RR.HH. los use, publícalos con el botón de abajo.</p>
+    <div class="grid">
+      <div class="c6"><label for="f_representante">Representante de EL PATRÓN</label><input id="f_representante"></div>
+      <div class="c6"><label for="f_lugar_firma">Lugar de firma</label><input id="f_lugar_firma"></div>
+      <div class="c12"><label for="f_domicilio_patron">Domicilio de EL PATRÓN</label><input id="f_domicilio_patron"></div>
+      <div class="c12"><label for="f_lugar_trabajo">Lugar de trabajo por defecto (obra)</label><input id="f_lugar_trabajo"></div>
+      <div class="c3"><label for="f_nacionalidad">Nacionalidad por defecto</label><input id="f_nacionalidad"></div>
+      <div class="c3"><label for="f_jornada">Jornada</label><select id="f_jornada"><option>DIURNA</option><option>NOCTURNA</option><option>MIXTA</option></select></div>
+      <div class="c3"><label for="f_tipo_salario">Tipo de salario</label><select id="f_tipo_salario"><option>DIARIO</option><option>SEMANAL</option><option>QUINCENAL</option><option>MENSUAL</option></select></div>
+      <div class="c3"><label for="f_periodicidad">Pago</label><select id="f_periodicidad"><option>SEMANAL</option><option>CATORCENAL</option><option>QUINCENAL</option><option>MENSUAL</option></select></div>
+      <div class="c4"><label for="f_forma_pago">Forma de pago</label><select id="f_forma_pago"><option>TRANSFERENCIA</option><option>EFECTIVO</option><option>CHEQUE</option></select></div>
+      <div class="c8"><label for="f_prestaciones">Prestaciones (cláusulas SÉPTIMA y NOVENA)</label><input id="f_prestaciones"></div>
+      <div class="c4"><label for="f_dias_prueba">Días de periodo de prueba (para la fecha de término)</label><input id="f_dias_prueba" type="number" min="0" max="180"></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" id="btnGuardarFijos">Guardar</button>
+      <button class="btn sec" id="btnRestaurar">Volver a la versión del equipo</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Catálogo de puestos</h2>
+    <p class="small" style="margin-top:0">Al elegir un puesto se llena la descripción de funciones de la cláusula PRIMERA.</p>
+    <div id="puestosList"></div>
+    <div class="row">
+      <button class="btn sec" id="btnNuevoPuesto">+ Agregar puesto</button>
+      <button class="btn" id="btnGuardarPuestos">Guardar catálogo</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Publicar para el equipo</h2>
+    <ol class="small" style="margin:0 0 12px;padding-left:18px;line-height:1.7">
+      <li>Pulsa <b>Descargar config.json</b>. El archivo trae estos datos fijos y el catálogo de puestos.</li>
+      <li>Entra al repositorio de la página en GitHub, pulsa <b>Add file → Upload files</b>, arrastra el <b>config.json</b> y pulsa <b>Commit changes</b>.</li>
+      <li>En uno o dos minutos todo el equipo verá los cambios al recargar la página.</li>
+    </ol>
+    <button class="btn" id="btnPublicar">Descargar config.json</button>
+  </div>
+</section>
+
+<!-- ============ AYUDA ============ -->
+<section class="tab" id="tab-ayuda">
+  <div class="card">
+    <h2>Cómo hacer un contrato</h2>
+    <ol style="margin:0;padding-left:20px;line-height:1.8">
+      <li>En <b>Contrato individual</b> escribe el nombre, la CURP, el NSS y el domicilio del trabajador. El RFC y la edad se llenan solos con la CURP.</li>
+      <li>Elige el <b>puesto</b> y revisa la obra. La descripción de funciones se llena sola.</li>
+      <li>Pon la <b>fecha de inicio</b> y el <b>salario diario</b>. El término del periodo de prueba, la fecha de firma y el importe con letra se calculan solos.</li>
+      <li>Revisa el recuadro <b>Resumen</b>. Si aparece algo en rojo, corrígelo; el botón no se activa hasta que todo esté completo.</li>
+      <li>Pulsa <b>Descargar contrato en Word</b>. El archivo se guarda en tu carpeta de Descargas con el nombre del trabajador.</li>
+    </ol>
+  </div>
+  <div class="card">
+    <h2>Varios trabajadores a la vez</h2>
+    <ol style="margin:0;padding-left:20px;line-height:1.8">
+      <li><b>Opción A:</b> llena el formulario y pulsa <b>Agregar al lote</b> en vez de descargar. Repite con cada trabajador.</li>
+      <li><b>Opción B:</b> en <b>Lote / Excel</b> descarga el formato, llena un renglón por trabajador y arrastra el Excel a la página.</li>
+      <li>Pulsa <b>Generar todos (ZIP)</b>. Se descarga un ZIP con un contrato Word por persona.</li>
+    </ol>
+  </div>
+  <div class="card">
+    <h2>Preguntas frecuentes</h2>
+    <p><b>¿Se suben los datos a internet?</b> No. El contrato se arma dentro de tu navegador y se descarga a tu computadora; ningún dato de los trabajadores se envía a un servidor.</p>
+    <p><b>Me marca "El dígito verificador del NSS no cuadra".</b> Casi siempre es un número mal tecleado. Compáralo con la hoja del IMSS. Si está bien, puedes generar el contrato de todos modos (es solo un aviso).</p>
+    <p><b>El puesto que necesito no aparece.</b> Pide a la persona responsable de la página que lo agregue en <b>Datos fijos y puestos</b> y lo publique para el equipo.</p>
+    <p><b>Se cerró la página y tenía trabajadores en el lote.</b> El lote se guarda en este navegador; vuelve a abrir la liga en el mismo navegador y ahí estará.</p>
+    <p style="margin-bottom:0"><b>Navegador recomendado:</b> Google Chrome o Microsoft Edge.</p>
+  </div>
+</section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script src="lib/pizzip.min.js"></script>
+<script src="lib/docxtemplater.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
+<script>
+
+/* ---------- valores por defecto (tomados de tu plantilla) ---------- */
+const ORIG_FIJOS = {
+  representante: "Eduardo Guillermo Navarrete Abrego",
+  domicilio_patron: "Pedregal #24, Int S200 P2, Molino del Rey, Miguel Hidalgo, CP 11040, Ciudad de México, México.",
+  lugar_trabajo: "Carretera Tepic-Aeropuerto Km 8 (cerca del poblado El Pantanal), C.P. 63780, en el municipio de Xalisco, Nayarit, México",
+  nacionalidad: "MEXICANA",
+  jornada: "DIURNA", tipo_salario: "DIARIO", periodicidad: "SEMANAL", forma_pago: "TRANSFERENCIA",
+  prestaciones: "prestaciones básicas de ley",
+  lugar_firma: "Tepic, Nayarit",
+  dias_prueba: 5
+};
+const ORIG_PUESTOS = [
+  {nombre:"OFICIAL ALBAÑIL", desc:"Ejecutar los trabajos de obra civil, albañilería y acabados conforme a planos e instrucciones de la supervisión; incluyendo actividades preliminares, trazo, nivelación, excavación, preparación y colado de mezclas y concreto en elementos estructurales o no estructurales, levantamiento de muros, aplanados, emboquillados, firmes, colocación de recubrimientos e impermeabilización; realizando la correcta operación y resguardo de la herramienta menor y equipo asignado, con el uso obligatorio de Equipo de Protección Personal (EPP), cumplimiento de protocolos de seguridad en trabajos en altura y manteniendo el orden y la limpieza fina del área de trabajo. Asimismo, será responsable de ejecutar labores constantes de limpieza, orden y retiro de escombros en las áreas de trabajo para garantizar el cumplimiento de los estándares de Seguridad, Salud en el Trabajo (SST), acatando en todo momento las normativas de prevención de riesgos de la empresa EL PATRÓN."},
+  {nombre:"AYUDANTE GENERAL", desc:"Apoyar al personal oficial en los trabajos de obra civil, albañilería y acabados conforme a las instrucciones de la supervisión; incluyendo acarreo y suministro de materiales, preparación de mezclas y concreto, excavaciones, rellenos y compactaciones manuales, apoyo en cimbrado, descimbrado y colados, así como el armado y desarmado de andamios bajo supervisión; realizando la correcta operación y resguardo de la herramienta menor y equipo asignado, con el uso obligatorio de Equipo de Protección Personal (EPP), cumplimiento de protocolos de seguridad en trabajos en altura y manteniendo el orden y la limpieza del área de trabajo. Asimismo, será responsable de ejecutar labores constantes de limpieza, orden y retiro de escombros en las áreas de trabajo para garantizar el cumplimiento de los estándares de Seguridad, Salud en el Trabajo (SST), acatando en todo momento las normativas de prevención de riesgos de la empresa EL PATRÓN."}
+];
+
+/* ---------- configuración del equipo (se incrusta al publicar) ---------- */
+// config.json vive junto a la página; quien administra lo actualiza en GitHub
+let CFG={};
+try{ const xr=new XMLHttpRequest(); xr.open("GET","config.json?t="+Date.now(),false); xr.send(); if(xr.status===200) CFG=JSON.parse(xr.responseText)||{}; }catch(e){ console.warn("Sin config.json, se usan los valores de la plantilla", e); }
+const DEF_FIJOS = Object.assign({}, ORIG_FIJOS, CFG.fijos||{});
+const DEF_PUESTOS = CFG.puestos || ORIG_PUESTOS;
+const VER = String(CFG.version||0);
+
+/* ---------- almacenamiento local seguro ---------- */
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem("siarqContratos."+k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem("siarqContratos."+k, JSON.stringify(v)); }catch(e){} }
+};
+// los cambios locales solo valen mientras no llegue una versión nueva del equipo
+const MISMA_VER = store.get("ver","0")===VER;
+let FIJOS = Object.assign({}, DEF_FIJOS, MISMA_VER ? store.get("fijos", {}) : {});
+let PUESTOS = (MISMA_VER && store.get("puestos", null)) || JSON.parse(JSON.stringify(DEF_PUESTOS));
+if(!MISMA_VER){ store.set("ver",VER); store.set("fijos",{}); store.set("puestos",null); }
+let LOTE = store.get("lote", []);
+
+const $ = id => document.getElementById(id);
+function toast(msg,ms){ const t=$("toast"); t.textContent=msg; t.classList.add("on"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("on"),ms||2600); }
+function esc(s){ return String(s??"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ---------- número a letras ---------- */
+const UN=["","UN","DOS","TRES","CUATRO","CINCO","SEIS","SIETE","OCHO","NUEVE","DIEZ","ONCE","DOCE","TRECE","CATORCE","QUINCE","DIECISÉIS","DIECISIETE","DIECIOCHO","DIECINUEVE","VEINTE","VEINTIÚN","VEINTIDÓS","VEINTITRÉS","VEINTICUATRO","VEINTICINCO","VEINTISÉIS","VEINTISIETE","VEINTIOCHO","VEINTINUEVE"];
+const DEC=["","","","TREINTA","CUARENTA","CINCUENTA","SESENTA","SETENTA","OCHENTA","NOVENTA"];
+const CEN=["","CIENTO","DOSCIENTOS","TRESCIENTOS","CUATROCIENTOS","QUINIENTOS","SEISCIENTOS","SETECIENTOS","OCHOCIENTOS","NOVECIENTOS"];
+function menorMil(n){
+  if(n===0) return "";
+  if(n===100) return "CIEN";
+  const c=Math.floor(n/100), r=n%100; let s=CEN[c];
+  if(r){ s += (s?" ":"") + (r<30 ? UN[r] : DEC[Math.floor(r/10)] + (r%10 ? " Y "+UN[r%10] : "")); }
+  return s;
+}
+function enteroLetras(n){
+  if(n===0) return "CERO";
+  const mill=Math.floor(n/1e6), miles=Math.floor((n%1e6)/1000), resto=n%1000; let s=[];
+  if(mill) s.push(mill===1 ? "UN MILLÓN" : enteroLetras(mill)+" MILLONES");
+  if(miles) s.push(miles===1 ? "MIL" : menorMil(miles)+" MIL");
+  if(resto) s.push(menorMil(resto));
+  return s.join(" ");
+}
+function pesosLetra(v){
+  const cents=Math.round(v*100), ent=Math.floor(cents/100), c=String(cents%100).padStart(2,"0");
+  let w=enteroLetras(ent);
+  const millonExacto = ent>=1e6 && ent%1e6===0;
+  return w + (ent===1 ? " PESO " : millonExacto ? " DE PESOS " : " PESOS ") + c + "/100 M.N.";
+}
+function fmtMoneda(v){ return Number(v).toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+/* ---------- fechas ---------- */
+const MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+function parseISO(s){ if(!s) return null; const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s); return m ? new Date(+m[1],+m[2]-1,+m[3]) : null; }
+function toISO(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function fechaLarga(s){ const d=parseISO(s); return d ? String(d.getDate()).padStart(2,"0")+" de "+MESES[d.getMonth()]+" de "+d.getFullYear() : ""; }
+function sumaDias(s,n){ const d=parseISO(s); if(!d) return ""; d.setDate(d.getDate()+Number(n||0)); return toISO(d); }
+function proximoLunes(){ const d=new Date(); d.setHours(0,0,0,0); const k=(8-d.getDay())%7; d.setDate(d.getDate()+(k===0?0:k)); return toISO(d); }
+
+/* ---------- validaciones CURP / RFC / NSS ---------- */
+const RE_CURP=/^[A-Z][AEIOUX][A-Z]{2}\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])[HMX](AS|BC|BS|CC|CL|CM|CS|CH|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d]\d$/;
+const RE_RFC=/^[A-ZÑ&]{4}\d{6}([A-Z\d]{3})?$/;
+function curpNacimiento(curp){
+  if(!RE_CURP.test(curp)) return null;
+  const yy=+curp.slice(4,6), mm=+curp.slice(6,8), dd=+curp.slice(8,10);
+  const siglo = /\d/.test(curp[16]) ? 1900 : 2000;
+  return new Date(siglo+yy, mm-1, dd);
+}
+function edadEn(nac, refISO){
+  const r=parseISO(refISO)||new Date(); let e=r.getFullYear()-nac.getFullYear();
+  if(r.getMonth()<nac.getMonth() || (r.getMonth()===nac.getMonth() && r.getDate()<nac.getDate())) e--;
+  return e;
+}
+function nssValido(n){
+  if(!/^\d{11}$/.test(n)) return false;
+  let s=0; for(let i=0;i<10;i++){ let d=+n[i]*(i%2?2:1); s+= d>9 ? d-9 : d; }
+  return (10 - s%10)%10 === +n[10];
+}
+
+/* ---------- normaliza un registro y calcula campos derivados ---------- */
+function completar(r){
+  const x = Object.assign({}, r);
+  const up = v => String(v??"").trim().toUpperCase();
+  x.nombre=up(x.nombre).replace(/\s+/g," ");
+  x.curp=up(x.curp).replace(/\s/g,""); x.rfc=up(x.rfc).replace(/\s/g,""); x.nss=String(x.nss??"").replace(/\D/g,"");
+  x.nacionalidad=up(x.nacionalidad||FIJOS.nacionalidad);
+  x.puesto=up(x.puesto);
+  x.lugar_trabajo=String(x.lugar_trabajo||FIJOS.lugar_trabajo).trim();
+  x.tipo_contrato=up(x.tipo_contrato||"DETERMINADO");
+  if(!x.descripcion){ const p=PUESTOS.find(p=>p.nombre===x.puesto); x.descripcion=p?p.desc:""; }
+  if(!x.fecha_fin && x.fecha_inicio) x.fecha_fin=sumaDias(x.fecha_inicio,FIJOS.dias_prueba);
+  if(!x.fecha_firma) x.fecha_firma=x.fecha_inicio||"";
+  const nac=curpNacimiento(x.curp);
+  if(!x.rfc && nac) x.rfc=x.curp.slice(0,10);
+  if((x.edad===""||x.edad==null) && nac) x.edad=edadEn(nac,x.fecha_firma);
+  return x;
+}
+function revisar(x){
+  const out=[];
+  const add=(lvl,msg)=>out.push({lvl,msg});
+  if(!x.nombre || x.nombre.split(" ").length<2) add("err","Falta el nombre completo");
+  if(!x.curp) add("err","Falta la CURP"); else if(!RE_CURP.test(x.curp)) add("err","CURP con formato inválido");
+  if(!x.rfc) add("err","Falta el RFC"); else if(!RE_RFC.test(x.rfc)) add("err","RFC con formato inválido");
+  else if(RE_CURP.test(x.curp) && x.rfc.slice(0,10)!==x.curp.slice(0,10)) add("warn","El RFC no coincide con la CURP");
+  if(!x.nss) add("err","Falta el NSS"); else if(!/^\d{11}$/.test(x.nss)) add("err","El NSS debe tener 11 dígitos"); else if(!nssValido(x.nss)) add("warn","El dígito verificador del NSS no cuadra, revísalo");
+  if(x.edad===""||x.edad==null) add("err","Falta la edad"); else if(x.edad<18) add("warn","Trabajador menor de 18 años");
+  if(!x.domicilio) add("err","Falta el domicilio");
+  if(!x.puesto) add("err","Falta el puesto");
+  if(!x.descripcion) add("warn","Sin descripción de funciones para este puesto");
+  if(!parseISO(x.fecha_inicio)) add("err","Falta la fecha de inicio");
+  if(!parseISO(x.fecha_fin)) add("err","Falta la fecha de término");
+  else if(parseISO(x.fecha_inicio) && parseISO(x.fecha_fin)<parseISO(x.fecha_inicio)) add("err","El término es antes del inicio");
+  if(!(Number(x.salario)>0)) add("err","Falta el salario");
+  return out;
+}
+function estado(rev){ return rev.some(r=>r.lvl==="err") ? "err" : rev.some(r=>r.lvl==="warn") ? "warn" : "ok"; }
+
+/* ---------- generación del Word ---------- */
+let TEMPLATE_BYTES=null;
+fetch("plantilla.docx").then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.arrayBuffer(); })
+  .then(b=>{ TEMPLATE_BYTES=new Uint8Array(b); })
+  .catch(e=>{ console.error(e); toast("No se pudo cargar la plantilla del contrato. Recarga la página.", 6000); });
+function plantilla(){
+  if(!TEMPLATE_BYTES) throw new Error("La plantilla todavía se está cargando, intenta de nuevo en unos segundos.");
+  return TEMPLATE_BYTES;
+}
+const punto = s => { s=String(s||"").trim(); return s && !/[.]$/.test(s) ? s+"." : s; };
+function datosDoc(x){
+  return {
+    representante: FIJOS.representante,
+    representante_mayus: FIJOS.representante.toUpperCase(),
+    domicilio_patron: punto(FIJOS.domicilio_patron),
+    nombre:x.nombre, nacionalidad:x.nacionalidad, edad:String(x.edad), curp:x.curp, rfc:x.rfc, nss:x.nss,
+    domicilio: punto(x.domicilio),
+    puesto:x.puesto, descripcion:x.descripcion.trim(),
+    tipo_contrato:x.tipo_contrato,
+    fecha_inicio:fechaLarga(x.fecha_inicio), fecha_fin:fechaLarga(x.fecha_fin), fecha_firma:fechaLarga(x.fecha_firma),
+    lugar_trabajo:x.lugar_trabajo.replace(/\.\s*$/,""),
+    jornada:FIJOS.jornada, tipo_salario:FIJOS.tipo_salario, periodicidad:FIJOS.periodicidad, forma_pago:FIJOS.forma_pago,
+    salario:fmtMoneda(x.salario), salario_letra:pesosLetra(Number(x.salario)),
+    prestaciones:FIJOS.prestaciones,
+    lugar_firma:FIJOS.lugar_firma
+  };
+}
+function generar(x, type){
+  const zip=new PizZip(plantilla());
+  const doc=new window.docxtemplater(zip,{paragraphLoop:true,linebreaks:true,nullGetter:()=>""});
+  doc.render(datosDoc(x));
+  return doc.getZip().generate({type, mimeType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document", compression:"DEFLATE"});
+}
+function nombreArchivo(x){
+  const n=x.nombre.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Z0-9 ]/gi,"").trim().replace(/\s+/g,"_");
+  return "Contrato_"+(n||"SIN_NOMBRE")+"_"+(x.fecha_inicio||"")+".docx";
+}
+function descargarBlob(blob, nombre){
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=nombre;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},1500);
+}
+
+/* ---------- pestañas ---------- */
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.id==="tab-"+b.dataset.tab));
+  if(b.dataset.tab==="fijos") pintarFijos();
+});
+
+/* ---------- formulario individual ---------- */
+const CAMPOS=["nombre","nacionalidad","curp","rfc","edad","nss","domicilio","puesto","lugar_trabajo","descripcion","fecha_inicio","fecha_fin","fecha_firma","tipo_contrato","salario"];
+const auto={rfc:true, edad:true, fecha_fin:true, fecha_firma:true};
+function llenarPuestos(sel, actual){
+  sel.innerHTML=PUESTOS.map(p=>`<option>${esc(p.nombre)}</option>`).join("");
+  if(actual && PUESTOS.some(p=>p.nombre===actual)) sel.value=actual;
+}
+function leerForm(){ const r={}; CAMPOS.forEach(k=>r[k]=$(k).value); return r; }
+function setHint(id,cls,msg){ const h=$("h-"+id); if(h){h.className="hint "+(cls||""); h.textContent=msg||"";} }
+function marcar(id,state){ $(id).classList.toggle("bad",state==="bad"); $(id).classList.toggle("good",state==="good"); }
+
+function recalcular(origen){
+  const curp=$("curp").value.toUpperCase().replace(/\s/g,""); if($("curp").value!==curp) $("curp").value=curp;
+  const nac=curpNacimiento(curp);
+  if(curp.length===18){ marcar("curp",nac?"good":"bad"); setHint("curp",nac?"ok":"err",nac?"Nacimiento: "+fechaLarga(toISO(nac)):"Formato de CURP inválido"); }
+  else { marcar("curp",curp?"bad":""); setHint("curp",curp?"err":"",curp?`${curp.length}/18 caracteres`:""); }
+  if(nac && auto.rfc) $("rfc").value=curp.slice(0,10);
+  if(origen==="fecha_inicio"){
+    if(auto.fecha_fin) $("fecha_fin").value=sumaDias($("fecha_inicio").value,FIJOS.dias_prueba);
+    if(auto.fecha_firma) $("fecha_firma").value=$("fecha_inicio").value;
+  }
+  if(nac && auto.edad) $("edad").value=edadEn(nac,$("fecha_firma").value);
+  const rfc=$("rfc").value.toUpperCase(); if($("rfc").value!==rfc) $("rfc").value=rfc;
+  marcar("rfc", rfc ? (RE_RFC.test(rfc)?"good":"bad") : "");
+  setHint("rfc", rfc && !RE_RFC.test(rfc) ? "err":"", rfc && !RE_RFC.test(rfc) ? "10 o 13 caracteres" : (rfc.length===10?"Sin homoclave":""));
+  const nss=$("nss").value.replace(/\D/g,""); if($("nss").value!==nss) $("nss").value=nss;
+  if(nss.length===11){ const ok=nssValido(nss); marcar("nss",ok?"good":"bad"); setHint("nss",ok?"ok":"err",ok?"NSS válido":"Dígito verificador no cuadra"); }
+  else { marcar("nss",nss?"bad":""); setHint("nss",nss?"err":"",nss?`${nss.length}/11 dígitos`:""); }
+  const s=Number($("salario").value);
+  $("salario_letra").textContent = s>0 ? "$"+fmtMoneda(s)+" ("+pesosLetra(s)+")" : "—";
+  pintarResumen();
+}
+function pintarResumen(){
+  const x=completar(leerForm());
+  const filas=[["Trabajador",x.nombre||"—"],["Puesto",x.puesto||"—"],["Periodo",(fechaLarga(x.fecha_inicio)||"—")+" al "+(fechaLarga(x.fecha_fin)||"—")],["Salario",x.salario>0?"$"+fmtMoneda(x.salario)+" diario":"—"],["Firma",FIJOS.lugar_firma+", "+(fechaLarga(x.fecha_firma)||"—")]];
+  $("resumen").innerHTML=filas.map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("");
+  const rev=revisar(x);
+  $("checks").innerHTML = rev.length ? rev.map(r=>`<li class="${r.lvl}">${esc(r.msg)}</li>`).join("") : `<li class="ok">Todo listo para generar</li>`;
+  $("btnDescargar").disabled = $("btnAgregar").disabled = rev.some(r=>r.lvl==="err");
+}
+CAMPOS.forEach(k=>{
+  const el=$(k);
+  el.addEventListener("input",()=>{
+    if(k in auto) auto[k] = el.value==="";   // si el usuario escribe, deja de autocalcular
+    if(k==="puesto"){ const p=PUESTOS.find(p=>p.nombre===el.value); $("descripcion").value=p?p.desc:""; }
+    recalcular(k);
+  });
+  el.addEventListener("change",()=>{ if(k==="puesto"){ const p=PUESTOS.find(p=>p.nombre===el.value); $("descripcion").value=p?p.desc:""; } recalcular(k); });
+});
+$("nombre").addEventListener("blur",()=>{ $("nombre").value=$("nombre").value.toUpperCase().replace(/\s+/g," ").trim(); pintarResumen(); });
+
+function limpiar(todo){
+  ["nombre","curp","rfc","edad","nss","domicilio"].forEach(k=>$(k).value="");
+  auto.rfc=auto.edad=true;
+  if(todo){
+    $("nacionalidad").value=FIJOS.nacionalidad; $("lugar_trabajo").value=FIJOS.lugar_trabajo;
+    llenarPuestos($("puesto"), PUESTOS[0]&&PUESTOS[0].nombre); $("descripcion").value=PUESTOS[0]?PUESTOS[0].desc:"";
+    $("fecha_inicio").value=proximoLunes(); auto.fecha_fin=auto.fecha_firma=true;
+    $("tipo_contrato").value="DETERMINADO";
+  }
+  document.querySelectorAll("input.bad,input.good").forEach(i=>i.classList.remove("bad","good"));
+  ["curp","rfc","nss","edad"].forEach(k=>setHint(k,"",""));
+  recalcular("fecha_inicio");
+  $("nombre").focus();
+}
+$("btnLimpiar").onclick=()=>limpiar(false);
+$("btnDescargar").onclick=()=>{
+  const x=completar(leerForm());
+  try{ descargarBlob(generar(x,"blob"), nombreArchivo(x)); toast("Contrato descargado"); }
+  catch(e){ console.error(e); toast("No se pudo generar el contrato: "+e.message, 6000); }
+};
+$("btnAgregar").onclick=()=>{
+  LOTE.push(completar(leerForm())); guardarLote(); pintarLote();
+  toast("Agregado al lote ("+LOTE.length+")"); limpiar(false);
+};
+
+/* ---------- lote ---------- */
+function guardarLote(){ store.set("lote",LOTE); }
+function pintarLote(){
+  $("loteCount").textContent=LOTE.length;
+  const tb=$("loteBody");
+  if(!LOTE.length){ tb.innerHTML=`<tr><td colspan="8" class="empty">No hay contratos en el lote. Agrégalos desde el formulario o sube un Excel.</td></tr>`; $("btnZip").disabled=true; $("loteInfo").textContent=""; return; }
+  let nErr=0;
+  tb.innerHTML=LOTE.map((x,i)=>{
+    const rev=revisar(x), st=estado(rev); if(st==="err") nErr++;
+    const etiqueta={ok:"Listo",warn:"Revisar",err:"Incompleto"}[st];
+    return `<tr><td>${i+1}</td><td><b>${esc(x.nombre)}</b></td><td>${esc(x.puesto)}</td><td>${esc(x.curp)}<br><span class="small">${esc(x.nss)}</span></td><td>${esc(fechaLarga(x.fecha_inicio))}</td><td>$${x.salario>0?fmtMoneda(x.salario):"—"}</td>
+      <td><span class="pill ${st}">${etiqueta}</span>${rev.length?`<div class="small" style="margin-top:4px">${rev.map(r=>esc(r.msg)).join("<br>")}</div>`:""}</td>
+      <td class="row" style="flex-wrap:nowrap"><button class="btn sec sm" data-dl="${i}" ${st==="err"?"disabled":""}>Word</button><button class="btn sec sm" data-ed="${i}" title="Pasar al formulario para corregir">Editar</button><button class="btn sec sm" data-rm="${i}" title="Quitar">✕</button></td></tr>`;
+  }).join("");
+  $("btnZip").disabled = LOTE.length===nErr;
+  $("loteInfo").textContent = nErr ? `${LOTE.length-nErr} listos, ${nErr} incompletos (no se incluirán en el ZIP)` : `${LOTE.length} listos`;
+}
+$("loteBody").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.rm){ LOTE.splice(+b.dataset.rm,1); guardarLote(); pintarLote(); }
+  if(b.dataset.dl){ const x=LOTE[+b.dataset.dl]; try{ descargarBlob(generar(x,"blob"),nombreArchivo(x)); }catch(err){ toast(err.message,6000); } }
+  if(b.dataset.ed){
+    const x=LOTE.splice(+b.dataset.ed,1)[0]; guardarLote(); pintarLote();
+    llenarPuestos($("puesto"));
+    if(!PUESTOS.some(p=>p.nombre===x.puesto) && x.puesto){ const o=document.createElement("option"); o.textContent=x.puesto; $("puesto").appendChild(o); }
+    CAMPOS.forEach(k=>$(k).value = x[k]??"");
+    auto.rfc=auto.edad=auto.fecha_fin=auto.fecha_firma=false;
+    document.querySelector('nav button[data-tab="uno"]').click(); recalcular(); toast("Corrige los datos y vuelve a agregarlo al lote");
+  }
+});
+$("btnVaciar").onclick=()=>{ if(LOTE.length && confirm("¿Quitar los "+LOTE.length+" contratos del lote?")){ LOTE=[]; guardarLote(); pintarLote(); } };
+$("btnZip").onclick=async()=>{
+  const b=$("btnZip"); b.disabled=true; const txt=b.textContent;
+  try{
+    const zip=new PizZip(); const usados={}; let n=0;
+    for(const x of LOTE){
+      if(estado(revisar(x))==="err") continue;
+      b.textContent=`Generando ${++n}…`; await new Promise(r=>setTimeout(r,0));
+      let nom=nombreArchivo(x); if(usados[nom]){ nom=nom.replace(".docx","_"+(++usados[nom])+".docx"); } else usados[nom]=1;
+      zip.file(nom, generar(x,"uint8array"));
+    }
+    const fecha=LOTE.find(x=>x.fecha_inicio)?.fecha_inicio||toISO(new Date());
+    descargarBlob(zip.generate({type:"blob",compression:"STORE"}), `Contratos_SIARQ_${fecha}.zip`);
+    toast(n+" contratos generados");
+  }catch(e){ console.error(e); toast("Error al generar: "+e.message, 6000); }
+  finally{ b.textContent=txt; b.disabled=false; }
+};
+
+/* ---------- Excel ---------- */
+const COLS=[
+  ["NOMBRE COMPLETO","nombre"],["CURP","curp"],["RFC (opcional)","rfc"],["NSS","nss"],["DOMICILIO","domicilio"],
+  ["PUESTO","puesto"],["FECHA INICIO","fecha_inicio"],["FECHA FIN (opcional)","fecha_fin"],["SALARIO DIARIO","salario"],
+  ["NACIONALIDAD (opcional)","nacionalidad"],["LUGAR DE TRABAJO (opcional)","lugar_trabajo"],["FECHA FIRMA (opcional)","fecha_firma"],["EDAD (opcional)","edad"]
+];
+$("btnFormato").onclick=()=>{
+  const ej={nombre:"JUAN PEREZ LOPEZ",curp:"",rfc:"",nss:"",domicilio:"Calle, número, colonia, C.P., municipio, estado",puesto:PUESTOS[0]?.nombre||"",fecha_inicio:parseISO(proximoLunes()),fecha_fin:"",salario:330.58,nacionalidad:"",lugar_trabajo:"",fecha_firma:"",edad:""};
+  const ws=XLSX.utils.aoa_to_sheet([COLS.map(c=>c[0]), COLS.map(c=>ej[c[1]])],{cellDates:true});
+  ws["!cols"]=COLS.map(c=>({wch:Math.max(14,c[0].length+2)})); ws["!cols"][0].wch=34; ws["!cols"][4].wch=50;
+  if(ws["G2"]) ws["G2"].z="dd/mm/yyyy";
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"CONTRATOS");
+  const wp=XLSX.utils.aoa_to_sheet([["PUESTOS VÁLIDOS (escríbelos igual en la columna PUESTO)"],...PUESTOS.map(p=>[p.nombre])]); wp["!cols"]=[{wch:55}];
+  XLSX.utils.book_append_sheet(wb,wp,"PUESTOS");
+  XLSX.writeFile(wb,"Formato_Contratos_SIARQ.xlsx");
+};
+function normFecha(v){
+  if(v==null||v==="") return "";
+  if(v instanceof Date && !isNaN(v)) return toISO(new Date(v.getFullYear(),v.getMonth(),v.getDate()));
+  if(typeof v==="number"){ const d=XLSX.SSF.parse_date_code(v); return d?toISO(new Date(d.y,d.m-1,d.d)):""; }
+  const s=String(v).trim(); let m;
+  if((m=/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/.exec(s))){ let y=+m[3]; if(y<100) y+=2000; return toISO(new Date(y,+m[2]-1,+m[1])); }
+  if((m=/^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s))) return toISO(new Date(+m[1],+m[2]-1,+m[3]));
+  if((m=/^(\d{1,2}) de (\w+) de (\d{4})$/i.exec(s))){ const i=MESES.indexOf(m[2].toLowerCase()); if(i>=0) return toISO(new Date(+m[3],i,+m[1])); }
+  return "";
+}
+const sinAcento = s => String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/\(.*?\)/g,"").replace(/\s+/g," ").trim();
+function leerExcel(file){
+  const fr=new FileReader();
+  fr.onload=e=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array",cellDates:true});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const filas=XLSX.utils.sheet_to_json(ws,{defval:"",raw:true});
+      const mapa={}; COLS.forEach(([h,k])=>mapa[sinAcento(h)]=k);
+      let n=0;
+      filas.forEach(f=>{
+        const r={};
+        for(const h in f){ const k=mapa[sinAcento(h)]; if(k) r[k]=f[h]; }
+        if(!String(r.nombre||"").trim()) return;
+        ["fecha_inicio","fecha_fin","fecha_firma"].forEach(k=>r[k]=normFecha(r[k]));
+        r.salario = typeof r.salario==="number" ? r.salario : Number(String(r.salario||"").replace(/[^\d.]/g,""));
+        if(r.edad!=="" && r.edad!=null) r.edad=Number(r.edad);
+        LOTE.push(completar(r)); n++;
+      });
+      guardarLote(); pintarLote();
+      toast(n ? n+" trabajadores importados" : "No se encontraron renglones con nombre");
+    }catch(err){ console.error(err); toast("No pude leer el Excel: "+err.message, 6000); }
+  };
+  fr.readAsArrayBuffer(file);
+}
+const drop=$("drop");
+drop.onclick=()=>$("fileXlsx").click();
+$("fileXlsx").onchange=e=>{ if(e.target.files[0]) leerExcel(e.target.files[0]); e.target.value=""; };
+drop.ondragover=e=>{e.preventDefault(); drop.classList.add("over");};
+drop.ondragleave=()=>drop.classList.remove("over");
+drop.ondrop=e=>{e.preventDefault(); drop.classList.remove("over"); if(e.dataTransfer.files[0]) leerExcel(e.dataTransfer.files[0]);};
+
+/* ---------- datos fijos y puestos ---------- */
+const FKEYS=["representante","lugar_firma","domicilio_patron","lugar_trabajo","nacionalidad","jornada","tipo_salario","periodicidad","forma_pago","prestaciones","dias_prueba"];
+function pintarFijos(){
+  FKEYS.forEach(k=>$("f_"+k).value=FIJOS[k]);
+  $("puestosList").innerHTML=PUESTOS.map((p,i)=>`<div class="puesto-item"><div class="grid">
+    <div class="c8"><label>Puesto</label><input data-pn="${i}" value="${esc(p.nombre)}"></div>
+    <div class="c4" style="display:flex;align-items:flex-end"><button class="btn sec sm" data-pdel="${i}">Eliminar puesto</button></div>
+    <div class="c12"><label>Descripción de funciones</label><textarea data-pd="${i}">${esc(p.desc)}</textarea></div></div></div>`).join("");
+}
+function leerPuestos(){
+  document.querySelectorAll("[data-pn]").forEach(el=>PUESTOS[+el.dataset.pn].nombre=el.value.trim().toUpperCase());
+  document.querySelectorAll("[data-pd]").forEach(el=>PUESTOS[+el.dataset.pd].desc=el.value.trim());
+}
+$("puestosList").addEventListener("click",e=>{ const b=e.target.closest("[data-pdel]"); if(!b) return; leerPuestos(); PUESTOS.splice(+b.dataset.pdel,1); pintarFijos(); });
+$("btnNuevoPuesto").onclick=()=>{ leerPuestos(); PUESTOS.push({nombre:"NUEVO PUESTO",desc:""}); pintarFijos(); };
+$("btnGuardarPuestos").onclick=()=>{
+  leerPuestos(); PUESTOS=PUESTOS.filter(p=>p.nombre); store.set("puestos",PUESTOS);
+  const act=$("puesto").value; llenarPuestos($("puesto"),act); pintarFijos(); toast("Catálogo guardado");
+};
+$("btnGuardarFijos").onclick=()=>{
+  FKEYS.forEach(k=>FIJOS[k]=$("f_"+k).value.trim()); FIJOS.dias_prueba=Number(FIJOS.dias_prueba)||0;
+  store.set("fijos",FIJOS); pintarResumen(); pintarLote(); toast("Datos fijos guardados");
+};
+$("btnRestaurar").onclick=()=>{
+  if(!confirm("¿Descartar tus cambios locales y volver a los datos fijos y puestos de la versión del equipo?")) return;
+  FIJOS=Object.assign({},DEF_FIJOS); PUESTOS=JSON.parse(JSON.stringify(DEF_PUESTOS));
+  store.set("fijos",FIJOS); store.set("puestos",PUESTOS); pintarFijos(); llenarPuestos($("puesto")); toast("Valores originales restaurados");
+};
+
+$("btnPublicar").onclick=()=>{
+  leerPuestos(); PUESTOS=PUESTOS.filter(p=>p.nombre);
+  FKEYS.forEach(k=>FIJOS[k]=$("f_"+k).value.trim()); FIJOS.dias_prueba=Number(FIJOS.dias_prueba)||0;
+  const cfg={version:Date.now(), fecha:toISO(new Date()), fijos:FIJOS, puestos:PUESTOS};
+  descargarBlob(new Blob([JSON.stringify(cfg,null,2)],{type:"application/json"}),"config.json");
+  toast("config.json descargado. Súbelo al repositorio en GitHub.", 5000);
+};
+if(CFG.fecha) $("verInfo").textContent="· Configuración del "+fechaLarga(CFG.fecha);
+
+/* ---------- inicio ---------- */
+limpiar(true);
+pintarLote();
+</script>
+</body>
+</html>
